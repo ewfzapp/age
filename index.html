@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculateur d'Âge Exact 2026 – Jours, Mois, Semaines vécus | Service Express</title>
+  <meta name="description" content="Calculez votre âge exact en années, mois, semaines et jours. Découvrez combien de jours vous avez vécus, votre prochain anniversaire, votre signe astrologique et votre pierre de naissance.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://age.service-express.org/">
+  <style>
+    :root {
+      --bg: #020617; --surface: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.10); --purple: #a78bfa;
+      --purple-dim: #818cf8; --accent: #7c3aed;
+      --text: #e2e8f0; --muted: #94a3b8;
+      --green: #34d399; --amber: #fbbf24; --pink: #f472b6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 0 16px 60px; }
+
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 0 24px; border-bottom: 1px solid var(--border); margin-bottom: 36px; }
+    .nav-brand { font-size: 15px; font-weight: 600; color: var(--purple); text-decoration: none; }
+    .nav-back  { font-size: 13px; color: var(--muted); text-decoration: none; }
+    .nav-back:hover { color: var(--purple); }
+
+    .container { max-width: 680px; margin: 0 auto; }
+
+    .hero { text-align: center; margin-bottom: 32px; }
+    .hero h1 { font-size: clamp(24px, 5vw, 36px); font-weight: 700; margin-bottom: 8px; }
+    .hero h1 span { color: var(--purple); }
+    .hero p { font-size: 15px; color: var(--muted); }
+
+    /* ── CARD ── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 28px; margin-bottom: 20px; }
+
+    /* ── INPUT DATE ── */
+    .field { margin-bottom: 20px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 500; }
+    .date-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .date-row select, .date-row input {
+      width: 100%; padding: 13px 10px; font-size: 15px; text-align: center;
+      background: rgba(255,255,255,.06); border: 1px solid var(--border);
+      border-radius: 12px; color: var(--text); outline: none;
+      transition: border-color .2s; -webkit-appearance: none; appearance: none;
+    }
+    .date-row select:focus, .date-row input:focus { border-color: var(--purple); }
+    .date-row select option { background: #1e1b4b; }
+    .date-hint { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 6px; padding: 0 2px; }
+
+    /* ── BTN ── */
+    .btn-calc {
+      width: 100%; padding: 15px; font-size: 16px; font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), #6d28d9);
+      color: #fff; border: none; border-radius: 14px; cursor: pointer;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn-calc:hover { opacity: .88; transform: translateY(-1px); }
+
+    /* ── RÉSULTAT ── */
+    #result { display: none; }
+
+    /* Age principal */
+    .age-hero {
+      text-align: center; padding: 32px 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; margin-bottom: 20px;
+    }
+    .age-num { font-size: clamp(64px, 14vw, 96px); font-weight: 800; color: var(--purple); line-height: 1; }
+    .age-label { font-size: 18px; color: var(--muted); margin-top: 6px; }
+    .age-exact { font-size: 15px; color: var(--purple-dim); margin-top: 12px; font-weight: 500; }
+
+    /* Stats grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 18px 14px; text-align: center;
+    }
+    .stat-icon { font-size: 24px; margin-bottom: 8px; }
+    .stat-val { font-size: 22px; font-weight: 800; color: var(--purple); line-height: 1; }
+    .stat-val.green { color: var(--green); }
+    .stat-val.amber { color: var(--amber); }
+    .stat-val.pink  { color: var(--pink); }
+    .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* Anniv countdown */
+    .anniv-card {
+      background: linear-gradient(135deg, rgba(124,58,237,.18), rgba(167,139,250,.08));
+      border: 1px solid rgba(167,139,250,.3);
+      border-radius: 16px; padding: 20px 22px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      flex-wrap: wrap; margin-bottom: 20px;
+    }
+    .anniv-left { font-size: 14px; color: var(--muted); }
+    .anniv-left strong { display: block; font-size: 17px; color: var(--text); margin-bottom: 4px; }
+    .anniv-days { font-size: 36px; font-weight: 800; color: var(--purple); white-space: nowrap; }
+    .anniv-days span { font-size: 14px; font-weight: 400; color: var(--muted); }
+
+    /* Signe + pierre */
+    .identity-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    @media(max-width:420px) { .identity-row { grid-template-columns: 1fr; } }
+    .identity-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 18px; text-align: center;
+    }
+    .identity-icon { font-size: 36px; margin-bottom: 8px; }
+    .identity-name { font-size: 17px; font-weight: 700; color: var(--purple); }
+    .identity-sub  { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* Barre de vie */
+    .life-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; margin-bottom: 20px; }
+    .life-header { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+    .life-bar { height: 10px; background: rgba(255,255,255,.07); border-radius: 6px; overflow: hidden; }
+    .life-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--purple-dim), var(--purple)); transition: width .8s ease; }
+    .life-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+    /* Fun facts */
+    .fun-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 8px; }
+    .fun-pill {
+      background: rgba(255,255,255,.03); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px; font-size: 13px;
+      color: var(--muted); line-height: 1.5;
+    }
+    .fun-pill strong { display: block; font-size: 16px; font-weight: 700; color: var(--purple-dim); margin-bottom: 3px; }
+
+    /* ── SEO ARTICLE ── */
+    .seo-article { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 28px; margin-top: 8px; }
+    .seo-article h2 { font-size: 18px; color: var(--purple); margin-bottom: 12px; }
+    .seo-article h3 { font-size: 15px; color: var(--text); margin: 20px 0 8px; }
+    .seo-article p  { font-size: 14px; color: var(--muted); line-height: 1.75; margin-bottom: 10px; }
+    .seo-article ul { padding-left: 18px; color: var(--muted); font-size: 14px; line-height: 2.1; }
+
+    footer { text-align: center; margin-top: 48px; font-size: 12px; color: var(--muted); }
+    footer a { color: var(--purple-dim); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <nav>
+    <a class="nav-brand" href="https://service-express.org">⚡ Service Express</a>
+    <a class="nav-back" href="https://service-express.org">← Retour au portail</a>
+  </nav>
+
+  <div class="hero">
+    <h1>🎂 Calculateur <span>d'Âge</span></h1>
+    <p>Votre âge exact en années, mois, jours — et bien plus encore</p>
+  </div>
+
+  <!-- FORMULAIRE -->
+  <div class="card">
+    <div class="field">
+      <label>Votre date de naissance</label>
+      <div class="date-row">
+        <select id="birth-day">
+          <option value="">Jour</option>
+        </select>
+        <select id="birth-month">
+          <option value="">Mois</option>
+          <option value="1">Janvier</option><option value="2">Février</option>
+          <option value="3">Mars</option><option value="4">Avril</option>
+          <option value="5">Mai</option><option value="6">Juin</option>
+          <option value="7">Juillet</option><option value="8">Août</option>
+          <option value="9">Septembre</option><option value="10">Octobre</option>
+          <option value="11">Novembre</option><option value="12">Décembre</option>
+        </select>
+        <input type="number" id="birth-year" placeholder="Année" min="1900" max="2025">
+      </div>
+      <div class="date-hint"><span>Jour</span><span>Mois</span><span>Année</span></div>
+    </div>
+    <button class="btn-calc" onclick="calculer()">Calculer mon âge →</button>
+  </div>
+
+  <!-- RÉSULTAT -->
+  <div id="result">
+
+    <!-- ÂGE PRINCIPAL -->
+    <div class="age-hero">
+      <div class="age-num" id="r-years">0</div>
+      <div class="age-label">ans</div>
+      <div class="age-exact" id="r-exact"></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-val" id="r-days">0</div>
+        <div class="stat-sub">jours vécus</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📆</div>
+        <div class="stat-val green" id="r-weeks">0</div>
+        <div class="stat-sub">semaines</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🗓️</div>
+        <div class="stat-val amber" id="r-months">0</div>
+        <div class="stat-sub">mois</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏰</div>
+        <div class="stat-val pink" id="r-hours">0</div>
+        <div class="stat-sub">heures (~)</div>
+      </div>
+    </div>
+
+    <!-- PROCHAIN ANNIVERSAIRE -->
+    <div class="anniv-card">
+      <div class="anniv-left">
+        <strong id="r-anniv-date">–</strong>
+        Prochain anniversaire
+      </div>
+      <div class="anniv-days"><span id="r-anniv-days">–</span> <span>jours</span></div>
+    </div>
+
+    <!-- SIGNE ASTRO + PIERRE -->
+    <div class="identity-row">
+      <div class="identity-card">
+        <div class="identity-icon" id="r-sign-icon">♈</div>
+        <div class="identity-name" id="r-sign-name">–</div>
+        <div class="identity-sub">Signe astrologique occidental</div>
+      </div>
+      <div class="identity-card">
+        <div class="identity-icon" id="r-stone-icon">💎</div>
+        <div class="identity-name" id="r-stone-name">–</div>
+        <div class="identity-sub">Pierre de naissance</div>
+      </div>
+    </div>
+
+    <!-- BARRE DE VIE -->
+    <div class="life-card">
+      <div class="life-header">
+        <span>Progression de vie</span>
+        <span id="r-life-pct">–%</span>
+      </div>
+      <div class="life-bar"><div class="life-fill" id="r-life-bar" style="width:0%"></div></div>
+      <div class="life-note">Basé sur l'espérance de vie française (83 ans – INSEE 2024)</div>
+    </div>
+
+    <!-- FUN FACTS -->
+    <div class="card" style="padding:22px">
+      <p style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;font-weight:600">Anecdotes</p>
+      <div class="fun-grid" id="r-fun"></div>
+    </div>
+
+  </div><!-- /result -->
+
+  <!-- SEO ARTICLE -->
+  <div class="seo-article">
+    <h2>Comment calculer son âge exact ?</h2>
+    <p>Calculer son âge exact ne se limite pas aux années. Pour obtenir votre âge précis à un jour donné, il faut tenir compte des années bissextiles, des mois de durées variables (28, 29, 30 ou 31 jours) et de l'heure de naissance pour une précision maximale.</p>
+
+    <h3>Âge en jours : pourquoi c'est utile ?</h3>
+    <p>Connaître le nombre de jours vécus est utile dans de nombreux contextes : médecine pédiatrique (développement du nourrisson), calculs de droits à la retraite, anniversaires symboliques (10 000 jours, 20 000 jours…). Un adulte de 30 ans a vécu environ 10 950 jours.</p>
+
+    <h3>Les signes astrologiques et leurs dates</h3>
+    <ul>
+      <li>Bélier : 21 mars – 19 avril</li>
+      <li>Taureau : 20 avril – 20 mai</li>
+      <li>Gémeaux : 21 mai – 20 juin</li>
+      <li>Cancer : 21 juin – 22 juillet</li>
+      <li>Lion : 23 juillet – 22 août</li>
+      <li>Vierge : 23 août – 22 septembre</li>
+      <li>Balance : 23 septembre – 22 octobre</li>
+      <li>Scorpion : 23 octobre – 21 novembre</li>
+      <li>Sagittaire : 22 novembre – 21 décembre</li>
+      <li>Capricorne : 22 décembre – 19 janvier</li>
+      <li>Verseau : 20 janvier – 18 février</li>
+      <li>Poissons : 19 février – 20 mars</li>
+    </ul>
+
+    <h3>Espérance de vie en France (2024)</h3>
+    <p>Selon l'INSEE, l'espérance de vie à la naissance est d'environ 85,7 ans pour les femmes et 80,1 ans pour les hommes en France. La moyenne toutes sexes confondues est d'environ 83 ans, valeur utilisée dans notre barre de progression de vie.</p>
+
+    <h3>Questions fréquentes</h3>
+    <ul>
+      <li>Mon âge change-t-il si je suis né le 29 février ? Oui, les bissextiles sont pris en compte.</li>
+      <li>Comment calculer l'âge d'un bébé en semaines ? Divisez le nombre de jours par 7.</li>
+      <li>Quelle différence entre âge civil et âge réel ? L'âge civil compte les années entières ; l'âge réel inclut les mois et jours résiduels.</li>
+    </ul>
+  </div>
+
+  <footer>
+    <p>© 2026 Service Express &nbsp;·&nbsp;
+      <a href="https://age.service-express.org/privacy.html">Confidentialité</a>
+    </p>
+  </footer>
+
+</div>
+
+<script>
+/* ── Remplir les jours ── */
+const dayEl = document.getElementById('birth-day');
+for (let d = 1; d <= 31; d++) {
+  const o = document.createElement('option');
+  o.value = d; o.textContent = d;
+  dayEl.appendChild(o);
+}
+
+/* ── Données signes ── */
+const SIGNES = [
+  { nom:'Capricorne', icon:'♑', pierre:'Grenat',    piIcon:'🔴', debut:[12,22] },
+  { nom:'Verseau',    icon:'♒', pierre:'Améthyste', piIcon:'💜', debut:[1,20]  },
+  { nom:'Poissons',   icon:'♓', pierre:'Aigue-marine', piIcon:'🔵', debut:[2,19] },
+  { nom:'Bélier',     icon:'♈', pierre:'Diamant',   piIcon:'💎', debut:[3,21]  },
+  { nom:'Taureau',    icon:'♉', pierre:'Émeraude',  piIcon:'💚', debut:[4,20]  },
+  { nom:'Gémeaux',    icon:'♊', pierre:'Alexandrite',piIcon:'🟣', debut:[5,21]  },
+  { nom:'Cancer',     icon:'♋', pierre:'Rubis',     piIcon:'❤️', debut:[6,21]  },
+  { nom:'Lion',       icon:'♌', pierre:'Péridot',   piIcon:'💛', debut:[7,23]  },
+  { nom:'Vierge',     icon:'♍', pierre:'Saphir',    piIcon:'🔷', debut:[8,23]  },
+  { nom:'Balance',    icon:'♎', pierre:'Opale',     piIcon:'🌈', debut:[9,23]  },
+  { nom:'Scorpion',   icon:'♏', pierre:'Topaze',    piIcon:'🟠', debut:[10,23] },
+  { nom:'Sagittaire', icon:'♐', pierre:'Turquoise', piIcon:'🩵', debut:[11,22] },
+];
+
+function getSigne(m, d) {
+  for (let i = SIGNES.length - 1; i >= 0; i--) {
+    const [sm, sd] = SIGNES[i].debut;
+    if (m > sm || (m === sm && d >= sd)) return SIGNES[i];
+  }
+  return SIGNES[0]; // Capricorne (début d'année)
+}
+
+const MOIS_FR = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+function fmt(n) { return new Intl.NumberFormat('fr-FR').format(n); }
+
+function calculer() {
+  const d = parseInt(document.getElementById('birth-day').value);
+  const m = parseInt(document.getElementById('birth-month').value);
+  const y = parseInt(document.getElementById('birth-year').value);
+
+  if (!d || !m || !y || y < 1900 || y > 2025) {
+    alert('Veuillez entrer une date de naissance complète et valide.');
+    return;
+  }
+
+  const birth = new Date(y, m - 1, d);
+  const now   = new Date();
+  now.setHours(12, 0, 0, 0);
+
+  if (birth > now) { alert('La date de naissance ne peut pas être dans le futur.'); return; }
+
+  /* ── Âge en années / mois / jours ── */
+  let years  = now.getFullYear() - birth.getFullYear();
+  let months = now.getMonth() - birth.getMonth();
+  let days   = now.getDate() - birth.getDate();
+
+  if (days < 0) { months--; const prev = new Date(now.getFullYear(), now.getMonth(), 0); days += prev.getDate(); }
+  if (months < 0) { years--; months += 12; }
+
+  /* ── Totaux ── */
+  const totalDays  = Math.floor((now - birth) / 86400000);
+  const totalWeeks = Math.floor(totalDays / 7);
+  const totalMonths= years * 12 + months;
+  const totalHours = totalDays * 24;
+
+  /* ── Prochain anniversaire ── */
+  let nextAnniv = new Date(now.getFullYear(), m - 1, d);
+  if (nextAnniv <= now) nextAnniv = new Date(now.getFullYear() + 1, m - 1, d);
+  const daysToAnniv = Math.ceil((nextAnniv - now) / 86400000);
+  const annivStr = `${d} ${MOIS_FR[m-1]} ${nextAnniv.getFullYear()}`;
+
+  /* ── Signe ── */
+  const signe = getSigne(m, d);
+
+  /* ── Barre de vie ── */
+  const lifePct = Math.min(100, (totalDays / (83 * 365.25) * 100)).toFixed(1);
+
+  /* ── Fun facts ── */
+  const hearts  = Math.round(totalDays * 24 * 60 * 70); // ~70 bpm
+  const breaths = Math.round(totalDays * 24 * 60 * 15); // ~15/min
+  const sleeps  = Math.round(totalDays * 0.33);
+  const blinks  = Math.round(totalDays * 24 * 60 * 15); // ~15/min
+
+  /* ── Affichage ── */
+  document.getElementById('r-years').textContent  = years;
+  document.getElementById('r-exact').textContent  = `${years} ans, ${months} mois et ${days} jour${days>1?'s':''}`;
+  document.getElementById('r-days').textContent   = fmt(totalDays);
+  document.getElementById('r-weeks').textContent  = fmt(totalWeeks);
+  document.getElementById('r-months').textContent = fmt(totalMonths);
+  document.getElementById('r-hours').textContent  = fmt(totalHours);
+
+  document.getElementById('r-anniv-date').textContent = annivStr;
+  document.getElementById('r-anniv-days').textContent = daysToAnniv === 0 ? '🎉 Aujourd\'hui !' : daysToAnniv;
+
+  document.getElementById('r-sign-icon').textContent  = signe.icon;
+  document.getElementById('r-sign-name').textContent  = signe.nom;
+  document.getElementById('r-stone-icon').textContent = signe.piIcon;
+  document.getElementById('r-stone-name').textContent = signe.pierre;
+
+  document.getElementById('r-life-pct').textContent = lifePct + '%';
+  document.getElementById('r-life-bar').style.width  = lifePct + '%';
+
+  document.getElementById('r-fun').innerHTML = [
+    { icon:'❤️', val: fmt(hearts),  label:'battements de cœur' },
+    { icon:'💨', val: fmt(breaths), label:'respirations' },
+    { icon:'😴', val: fmt(sleeps),  label:'jours dormis' },
+    { icon:'👁️', val: fmt(blinks),  label:'clignements d\'yeux' },
+  ].map(f => `<div class="fun-pill"><strong>${f.icon} ${f.val}</strong>${f.label}</div>`).join('');
+
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('result').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+</script>
+
+</body>
+</html>
